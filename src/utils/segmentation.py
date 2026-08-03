@@ -1,10 +1,12 @@
 from cellpose import models, core, io
 import numpy as np
+import pyclesperanto_prototype as cle
 from skimage.filters import difference_of_gaussians
 from scipy.ndimage import binary_fill_holes, distance_transform_edt
 from skimage.morphology import binary_closing, binary_opening, binary_erosion, disk, ball
 from skimage.measure import label
 from skimage.segmentation import relabel_sequential
+from skimage.transform import resize
 
 io.logger_setup()  # run this to get printing of progress
 
@@ -76,7 +78,7 @@ def _keep_objects_in_size_range(labels: np.ndarray, min_max_size: tuple[int, int
     filtered, _, _ = relabel_sequential(filtered)
     return filtered
 
-def predict_nuclei_labels(image: np.ndarray, rescale_factor: float, nuclei_channel: int, min_max_nuclei_volume: tuple[int, int] | None = None, visualize=False, viewer=None) -> np.ndarray:
+def predict_nuclei_labels_cp(image: np.ndarray, rescale_factor: float, nuclei_channel: int, min_max_nuclei_volume: tuple[int, int] | None = None, visualize=False, viewer=None) -> np.ndarray:
     """
     Predict nuclei labels using CellposeSAM using anisotropy correction.
 
@@ -97,6 +99,76 @@ def predict_nuclei_labels(image: np.ndarray, rescale_factor: float, nuclei_chann
 
     # Predict nuclei labels
     nuclei_labels, _ , _ = model.eval(image[nuclei_channel], do_3D=True, anisotropy=rescale_factor, z_axis=0, niter=1000)
+    # Filter nuclei labels to keep only those within the specified size range
+    nuclei_labels = _keep_objects_in_size_range(nuclei_labels, min_max_nuclei_volume)
+
+    # Display the resulting nuclei labels in Napari if requested.
+    if visualize:
+        v = _resolve_napari_viewer(viewer)
+        v.add_labels(nuclei_labels)
+
+    return nuclei_labels
+
+
+def predict_nuclei_labels_vo(
+    image: np.ndarray,
+    rescale_factor: float,
+    nuclei_channel: int,
+    min_max_nuclei_volume: tuple[int, int] | None = None,
+    spot_sigma: float = 5,
+    outline_sigma: float = 1,
+    visualize=False,
+    viewer=None,
+) -> np.ndarray:
+    """
+    Predict nuclei labels using pyclesperanto Voronoi-Otsu labeling with anisotropy correction.
+
+    Args:
+        image (np.ndarray): Image to predict nuclei labels from.
+        rescale_factor (float): Rescale factor to apply to the Z-axis for isotropic scaling (z_um / mean([x_um, y_um])).
+        nuclei_channel (int): Channel index of the nuclei channel in the image.
+        min_max_nuclei_volume (tuple[int, int] | None, optional): Inclusive min/max nuclei volume
+            used to filter predicted labels. Defaults to None (no volume filtering).
+        visualize (bool, optional): If True, display the predicted nuclei labels in Napari.
+        viewer (optional): Napari ``Viewer`` instance. If ``visualize`` is True and this is omitted,
+            the current viewer (if any) is used, otherwise a new ``napari.Viewer()`` is created.
+        spot_sigma (float, optional): Controls how close detected nuclei can be in Voronoi-Otsu
+            labeling. Larger values merge nearby spots. Defaults to 5.
+        outline_sigma (float, optional): Controls how precise segmented objects are outlined.
+            Larger values produce smoother boundaries. Defaults to 1.
+
+    Returns:
+        np.ndarray: Nuclei labels.
+    """
+    nuclei_channel_image = image[nuclei_channel].astype(np.float32)
+
+    # Voronoi-Otsu assumes isotropic voxels: stretch Z by the anisotropy rescale factor
+    nuclei_iso = cle.scale(
+        nuclei_channel_image,
+        factor_x=1,
+        factor_y=1,
+        factor_z=float(rescale_factor),
+        auto_size=True,
+        linear_interpolation=True,
+    )
+
+    # Predict nuclei labels
+    labels_iso = cle.voronoi_otsu_labeling(
+        nuclei_iso,
+        spot_sigma=spot_sigma,
+        outline_sigma=outline_sigma,
+    )
+
+    # Map labels back to the original anisotropic grid (nearest-neighbor)
+    labels_iso_np = np.asarray(cle.pull(labels_iso))
+    nuclei_labels = resize(
+        labels_iso_np,
+        nuclei_channel_image.shape,
+        order=0,
+        preserve_range=True,
+        anti_aliasing=False,
+    ).astype(np.uint32)
+
     # Filter nuclei labels to keep only those within the specified size range
     nuclei_labels = _keep_objects_in_size_range(nuclei_labels, min_max_nuclei_volume)
 
