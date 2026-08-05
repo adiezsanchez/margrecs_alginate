@@ -25,7 +25,7 @@ def extract_condition(container_id: str) -> str:
         return "undefined"
 
 
-def extract_day(image_name: str) -> int | float:
+def extract_day(image_name: str) -> int:
     """
     Extract the day number from the image file name.
 
@@ -33,11 +33,7 @@ def extract_day(image_name: str) -> int | float:
         image_name (str): Name or path of the image file, expected to contain tags such as "d3-", "d7-", or "d14-".
 
     Returns:
-        int | float: Day number (3, 7, or 14) if found.
-
-    Notes:
-        - Searches for day tags in a case-insensitive manner.
-        - Returns np.nan if the day tag is not found in the file name.
+        int: Day number (3, 7, or 14) if found, else 0 if the day tag is not found.
     """
     name = str(image_name)
     if any(tag in name for tag in ["d3-", "D3-"]):
@@ -47,7 +43,28 @@ def extract_day(image_name: str) -> int | float:
     elif any(tag in name for tag in ["d14-", "D14-"]):
         return 14
     else:
-        return np.nan  # could be left blank if not found
+        return 0
+
+
+def extract_magnification(image_name: str) -> int:
+    """
+    Extract the magnification level from the image file name.
+
+    Args:
+        image_name (str): Name or path of the image file, expected to contain tags such as "-5x-", "-10x-", or "-20x-".
+
+    Returns:
+        int: Magnification (5, 10, or 20) if found, else 0 if not found.
+    """
+    name = str(image_name).lower()
+    if "-5x-" in name:
+        return 5
+    elif "-10x-" in name:
+        return 10
+    elif "-20x-" in name:
+        return 20
+    else:
+        return 0
 
 
 def classify_ki67_status_kmeans(
