@@ -49,8 +49,8 @@ def extract_day(image_name: str) -> int | float:
     else:
         return np.nan  # could be left blank if not found
 
-        
-def classify_ki67_status(
+
+def classify_ki67_status_kmeans(
     props_df: "pd.DataFrame",
     feature_columns: list = ['ki67_mean_int', 'ki67_sum_int']
 ) -> "pd.DataFrame":

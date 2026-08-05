@@ -28,7 +28,9 @@ def map_df_column_to_labels(
     normalize: bool = False,
     clip_percentiles: Optional[Tuple[float, float]] = (1, 99),
     background_value: float = 0.0,
-    colormap: str = "turbo",   
+    colormap: str = "turbo",
+    colormap_vmin: Optional[float] = None,
+    colormap_vmax: Optional[float] = None,
     visualize: bool = False,
     viewer=None,
     layer_name: Optional[str] = None,
@@ -68,7 +70,13 @@ def map_df_column_to_labels(
 
         colormap (str, optional):
             Colormap to use for visualization. Default is "turbo".
-            
+
+        colormap_vmin (float, optional):
+            Lower contrast limit for visualization. If None, inferred from mapped values.
+
+        colormap_vmax (float, optional):
+            Upper contrast limit for visualization. If None, inferred from mapped values.
+
         visualize (bool, optional):
             If True, display the result in Napari.
 
@@ -127,12 +135,27 @@ def map_df_column_to_labels(
     if visualize:
         v = _resolve_napari_viewer(viewer)
         name = layer_name if layer_name is not None else value_column
-        v.add_image(
-            out,
-            name=name,
-            colormap=colormap,
-            blending="additive",
-        )
+        add_image_kwargs = {
+            "name": name,
+            "colormap": colormap,
+            "blending": "additive",
+        }
+
+        if colormap_vmin is not None or colormap_vmax is not None:
+            mask = nuclei_labels > 0
+            values_for_limits = out[mask] if np.any(mask) else out
+            auto_vmin = float(np.nanmin(values_for_limits))
+            auto_vmax = float(np.nanmax(values_for_limits))
+
+            vmin = auto_vmin if colormap_vmin is None else float(colormap_vmin)
+            vmax = auto_vmax if colormap_vmax is None else float(colormap_vmax)
+
+            if (not np.isfinite(vmin)) or (not np.isfinite(vmax)) or (vmin >= vmax):
+                raise ValueError("Invalid contrast limits: require finite colormap_vmin < colormap_vmax.")
+
+            add_image_kwargs["contrast_limits"] = (vmin, vmax)
+
+        v.add_image(out, **add_image_kwargs)
 
     return out
 
@@ -173,8 +196,10 @@ def plot_prop_to_3d_centroids(
     z = props_df["centroid-0"]  # Z spatial axis (axis=0)
     values = props_df[value_column]
 
-    vmin = colormap_vmin if colormap_vmin is not None else np.nanmin(values)
-    vmax = colormap_vmax if colormap_vmax is not None else np.nanmax(values)
+    vmin = float(colormap_vmin) if colormap_vmin is not None else float(np.nanmin(values))
+    vmax = float(colormap_vmax) if colormap_vmax is not None else float(np.nanmax(values))
+    if (not np.isfinite(vmin)) or (not np.isfinite(vmax)) or (vmin >= vmax):
+        raise ValueError("Invalid colormap range: require finite colormap_vmin < colormap_vmax.")
     cmap = plt.get_cmap(colormap)
     norm = plt.Normalize(vmin=vmin, vmax=vmax)
     colors = cmap(norm(values))
