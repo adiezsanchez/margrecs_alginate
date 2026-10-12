@@ -178,3 +178,33 @@ def predict_nuclei_labels_vo(
         v.add_labels(nuclei_labels)
 
     return nuclei_labels
+
+
+def clean_colocalized_labels(
+    labels_to_clean: np.ndarray,
+    colocalizing_labels: np.ndarray,
+) -> np.ndarray:
+    """
+    Remove voxels from ``labels_to_clean`` that overlap with ``colocalizing_labels``.
+
+    Intended for imperfect channel colocalization (e.g. zero HPFa_red voxels that
+    overlap A549_green predictions). Label IDs are preserved so downstream
+    comparisons by label (e.g. percent area removed) remain valid.
+
+    Args:
+        labels_to_clean (np.ndarray): Label image to clean (e.g. HPFa_red).
+        colocalizing_labels (np.ndarray): Label image used as a mask (e.g. A549_green).
+            Any voxel where this is > 0 is zeroed in ``labels_to_clean``.
+
+    Returns:
+        np.ndarray: Cleaned labels (copy); originals are left unchanged.
+    """
+    if labels_to_clean.shape != colocalizing_labels.shape:
+        raise ValueError(
+            "labels_to_clean and colocalizing_labels must have the same shape, "
+            f"got {labels_to_clean.shape} and {colocalizing_labels.shape}."
+        )
+
+    cleaned = labels_to_clean.copy()
+    cleaned[colocalizing_labels > 0] = 0
+    return cleaned
