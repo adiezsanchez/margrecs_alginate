@@ -1,6 +1,7 @@
 # Results
 results/
 ki67_results/
+coc_results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
