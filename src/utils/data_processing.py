@@ -24,26 +24,28 @@ def extract_condition(container_id: str) -> str:
     else:
         return "undefined"
 
-def extract_condition_coc(container_id: str) -> str:
+def extract_condition_coc(image_name: str) -> str:
     """
-    Extract the experimental condition from the provided container ID for COC data.
+    Extract the experimental condition from the COC image name.
 
     Args:
-        container_id (str): Identifier of the container, typically including condition label.
+        image_name (str): Image/CSV stem, expected to contain ``+FGF`` or ``-FGF``
+            (e.g. ``D1SD1+FGF-1.1-10x``, ``D1SD1-FGF-1.1-10x``).
 
     Returns:
         str: Experimental condition. Possible values:
-            - "+FGF" if '+FGF' is in the ID (case-insensitive)
-            - "-FGF" if '-FGF' is in the ID (case-insensitive)
-            - "undefined" if neither condition is found in the ID
+            - "+FGF" if '+FGF' is in the name (case-insensitive)
+            - "-FGF" if '-FGF' is in the name (case-insensitive)
+            - "undefined" if neither condition is found
 
     Notes:
-        This function is case-insensitive and will return "undefined" if no known condition tag is present.
+        Matching is case-insensitive. ``+FGF`` is checked before ``-FGF`` so names
+        like ``D3-SD2-+FGF-...`` resolve to ``+FGF``.
     """
-    cid = str(container_id).lower()
-    if "+FGF" in cid:
+    name = str(image_name).lower()
+    if "+fgf" in name:
         return "+FGF"
-    elif "-FGF" in cid:
+    elif "-fgf" in name:
         return "-FGF"
     else:
         return "undefined"
@@ -89,17 +91,20 @@ def extract_day_coc(image_name: str) -> int:
 
 def extract_hours_prior_coc(container_id: str) -> int:
     """
-    Extract the hours prior to HPFa from the container ID for COC data.
+    Extract the hours prior to HPFa from the COC container ID.
 
     Args:
-        container_id (str): Identifier of the container, typically including hours prior to HPFa tag.
+        container_id (str): Container folder id, expected to contain a tag like
+            ``24hpriortoHPFa`` or ``48hpriortoHPFa``
+            (e.g. ``Co-culture-day1-A549-24hpriortoHPFa``).
 
     Returns:
-        int: Hours prior to HPFa if found, else 0 if not found.
+        int: Hours prior to HPFa (24 or 48) if found, else 0 if not found.
     """
     cid = str(container_id).lower()
-    if "hpriortoHPFa" in cid:
-        return int(cid.split("hpriortoHPFa")[0].split("-")[-1])
+    tag = "hpriortohpfa"
+    if tag in cid:
+        return int(cid.split(tag)[0].split("-")[-1])
     else:
         return 0
 
