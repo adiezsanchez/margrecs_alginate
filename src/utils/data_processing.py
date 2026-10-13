@@ -24,6 +24,29 @@ def extract_condition(container_id: str) -> str:
     else:
         return "undefined"
 
+def extract_condition_coc(container_id: str) -> str:
+    """
+    Extract the experimental condition from the provided container ID for COC data.
+
+    Args:
+        container_id (str): Identifier of the container, typically including condition label.
+
+    Returns:
+        str: Experimental condition. Possible values:
+            - "+FGF" if '+FGF' is in the ID (case-insensitive)
+            - "-FGF" if '-FGF' is in the ID (case-insensitive)
+            - "undefined" if neither condition is found in the ID
+
+    Notes:
+        This function is case-insensitive and will return "undefined" if no known condition tag is present.
+    """
+    cid = str(container_id).lower()
+    if "+FGF" in cid:
+        return "+FGF"
+    elif "-FGF" in cid:
+        return "-FGF"
+    else:
+        return "undefined"
 
 def extract_day(image_name: str) -> int:
     """
@@ -45,6 +68,40 @@ def extract_day(image_name: str) -> int:
     else:
         return 0
 
+def extract_day_coc(image_name: str) -> int:
+    """
+    Extract the day number from the image file name for COC data.
+
+    Args:
+        image_name (str): Name or path of the image file, expected to contain tags such as "day1" or "day3".
+
+    Returns:
+        int: Day number (1 or 3) if found, else 0 if the day tag is not found.
+    """
+    name = str(image_name)
+    if any(tag in name for tag in ["day1", "Day1"]):
+        return 1
+    elif any(tag in name for tag in ["day3", "Day3"]):
+        return 3
+    else:
+        return 0
+
+
+def extract_hours_prior_coc(container_id: str) -> int:
+    """
+    Extract the hours prior to HPFa from the container ID for COC data.
+
+    Args:
+        container_id (str): Identifier of the container, typically including hours prior to HPFa tag.
+
+    Returns:
+        int: Hours prior to HPFa if found, else 0 if not found.
+    """
+    cid = str(container_id).lower()
+    if "hpriortoHPFa" in cid:
+        return int(cid.split("hpriortoHPFa")[0].split("-")[-1])
+    else:
+        return 0
 
 def extract_magnification(image_name: str) -> int:
     """
