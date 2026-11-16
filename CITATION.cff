@@ -1,0 +1,22 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - family-names: "Díez-Sánchez"
+    given-names: "Alberto"
+    orcid: "https://orcid.org/0000-0001-5146-3089"
+title: "margrecs_alginate: 3D cell population analysis of alginate-bead cultures"
+abstract: >-
+  Custom Python pipeline for three-dimensional multichannel confocal stacks of
+  alginate-bead cultures acquired as Leica .lif containers. Images are loaded as
+  (channel, Z, Y, X) arrays with anisotropy correction from Leica metadata;
+  objects are segmented (Voronoi–Otsu or CellposeSAM), and morphological plus
+  channel-wise intensity features are extracted with scikit-image for Ki67
+  proliferation and A549/HPFa co-culture analyses.
+license: BSD-3-Clause
+repository-code: "https://github.com/adiezsanchez/margrecs_alginate"
+url: "https://github.com/adiezsanchez/margrecs_alginate"
+# version, doi, and date-released: add after the first formal release / Zenodo deposition
+# version: 1.0.0
+# doi: 10.5281/zenodo.XXXXXXXX
+# date-released: YYYY-MM-DD
