@@ -1,5 +1,6 @@
-# margrecs_alginate
+# margrecs_alginate: 3D cell population analysis of alginate-bead cultures
 
+[![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.24281254-blue.svg)](https://doi.org/10.5281/zenodo.24281254)
 [![License: BSD-3-Clause](https://img.shields.io/badge/License-BSD--3-green.svg)](https://github.com/adiezsanchez/margrecs_alginate/blob/main/LICENSE)
 
 3D multichannel image analysis of alginate-bead cell cultures acquired as Leica `.lif` containers. The pipeline corrects for Z anisotropy from Leica metadata, segments nuclei or dual fluorescent populations in 3D, extracts morphological and channel-wise intensity features with scikit-image, and aggregates per-image CSVs for downstream comparison of experimental conditions.
@@ -125,8 +126,16 @@ A549/HPFa co-culture. Dual fluorescent populations (A549_green and HPFa_red) wer
 If you use this pipeline to analyze your bioimage data, you can include it in your references as follows:
 
 - For APA and BibTeX, scroll to the top of this repository page, above the Release section, and under **About** click **Cite this repository**.
-- For APA, Harvard, MLA, Vancouver, Chicago, and IEEE styles, visit the Zenodo record (once deposited) and use the **Citation** section in the right panel.
+- For APA, Harvard, MLA, Vancouver, Chicago, and IEEE styles, visit the Zenodo record (see DOI badge below) and use the **Citation** section in the right panel.
 - For licensing terms, see `LICENSE` (BSD 3-Clause).
+
+[![DOI](https://img.shields.io/badge/DOI-10.5281/zenodo.24281254-blue.svg)](https://doi.org/10.5281/zenodo.24281254)
+
+Example APA citation:
+
+```
+Díez-Sánchez, A. (2026). margrecs_alginate: 3D cell population analysis of alginate-bead cultures (Version v1.0.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.24281255
+```
 
 ---
 

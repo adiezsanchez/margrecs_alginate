@@ -16,7 +16,6 @@ abstract: >-
 license: BSD-3-Clause
 repository-code: "https://github.com/adiezsanchez/margrecs_alginate"
 url: "https://github.com/adiezsanchez/margrecs_alginate"
-# version, doi, and date-released: add after the first formal release / Zenodo deposition
-# version: 1.0.0
-# doi: 10.5281/zenodo.XXXXXXXX
-# date-released: YYYY-MM-DD
+version: 1.0.0
+doi: 10.5281/zenodo.24281255
+date-released: 2026-11-16
